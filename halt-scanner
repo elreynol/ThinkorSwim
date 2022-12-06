@@ -13,3 +13,8 @@ def Allowed = SecondsFromTime(StartTime) >= 0 and SecondsTillTime(EndTime)-1 >= 
 def TimeSegment = rounddown(SecondsFromTime(StartTime)/60,0);
 def haltTime = if Allowed and TimeSegment > TimeSegment[1] + 1 then TimeSegment - TimeSegment[1] else 0;
 plot isHalted = Allowed and haltTime > haltTime[1] + 1;
+
+# For chart indicator, uncomment these:
+# AddChartBubble(isHalted, high, "Halt: " + haltTime + "m", Color.WHITE, yes);
+
+# Alert(isHalted, "Halted", Alert.BAR, Sound.DING);
