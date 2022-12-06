@@ -1,0 +1,15 @@
+# Halt Indicator Scanner
+# https://b4indicators.com
+# Shows how much time a stock is halted on 1 minute chart
+
+declare hide_on_daily;
+
+input StartTime = 0930;
+input EndTime   = 1600;
+
+def Allowed = SecondsFromTime(StartTime) >= 0 and SecondsTillTime(EndTime)-1 >= 0 and
+              GetDay() == GetLastDay() and
+              GetAggregationPeriod() == AggregationPeriod.MIN;
+def TimeSegment = rounddown(SecondsFromTime(StartTime)/60,0);
+def haltTime = if Allowed and TimeSegment > TimeSegment[1] + 1 then TimeSegment - TimeSegment[1] else 0;
+plot isHalted = Allowed and haltTime > haltTime[1] + 1;
