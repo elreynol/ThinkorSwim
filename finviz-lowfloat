@@ -1,0 +1,42 @@
+# !/bin/sh
+# Grab symbols from FinViz that meet your float requirements.
+# In ToS Watchlist > Create watchlist > import > select the csv file
+# You can then create a scanner and choose this watchlist to "Scan in:".
+ 
+# Change this to the directory you want to save your watchlists.
+outdir="$HOME"
+ 
+# Choose the fields you want to define (check finviz.com for more choices).
+FLOAT='sh_float_o50'           # over 50M
+PRICE='sh_price_o5'            # over $3
+VOLUME='sh_avgvol_o1000'       # over 1M
+RELVOL='sh_relvol_o2'        # over 2x
+ATR='ta_averagetruerange_o1.5' # over $1.50
+ 
+# Add these fields to your search.
+fields="${FLOAT},${PRICE},${VOLUME},${RELVOL},${ATR}"
+ 
+# These lines shouldn't need to be changed (much).
+finviz='https://finviz.com'
+start=1
+per_page=20
+now="$(date +%Y-%m-%d)"
+ 
+screener='screener.ashx'
+endpoint="$screener"
+outfile="${outdir}/${now}_${fields}.csv"
+[ -f "$outfile" ] && rm "$outfile"
+ 
+total=$(curl -s "${finviz}/${endpoint}?v=111&f=${fields}&r=${start}" | egrep -o '<b>Total: </b>[[:digit:]]+' | cut -d '>' -f 3)
+ 
+while [ "$start" -lt "$total" ]; do
+    curl -s "${finviz}/${endpoint}?v=111&f=${fields}&r=${start}" | egrep -o '^[A-Z]{1,}\|' | tr -d '|' | tee -a "$outfile"
+    start=$(( start + per_page ))
+done
+ 
+echo
+echo "Use this URL to check/refine your query."
+echo "${finviz}/${endpoint}?v=111&f=${fields}&r=1"
+echo
+echo "ToS Watchlist > Create watchlist > Import >"
+echo "$outfile"
